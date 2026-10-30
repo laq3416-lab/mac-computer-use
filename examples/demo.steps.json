@@ -1,0 +1,4 @@
+[
+  {"act": "set", "role": "AXTextArea", "value": "这一段是 cu-act 自动写进去并核对的", "expect": "自动写进去"},
+  {"act": "press", "title": "关于文本编辑", "expect": "版本", "timeout": 5}
+]
