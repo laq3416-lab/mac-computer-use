@@ -66,9 +66,8 @@ make            # 编译 cu 和 cu-ax
 
 ```json
 [
-  {"act": "press", "title": "新建文稿", "expect": "未命名", "timeout": 6},
-  {"act": "set", "role": "AXTextArea", "value": "自动写入的一段话", "expect": "自动写入"},
-  {"act": "press", "at": [194, 100], "timeout": 3}
+  {"act": "set", "role": "AXTextArea", "value": "这一段是 cu-act 自动写进去并核对的", "expect": "自动写进去"},
+  {"act": "press", "title": "关于文本编辑", "expect": "版本", "timeout": 5}
 ]
 ```
 
