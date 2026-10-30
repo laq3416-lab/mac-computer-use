@@ -276,6 +276,7 @@ static void usage(void) {
         "  cu-ax press  --pid P|--app A --at X Y      按坐标找最近的控件再按（不动指针）\n"
         "  cu-ax set    --pid P|--app A --value 文字 [--index 1]\n"
         "  cu-ax focus  --pid P|--app A\n"
+        "  cu-ax focused                      当前焦点控件（光标在哪）\n"
         "  cu-ax enable --pid P|--app A       让 Chromium 系暴露网页控件树\n"
         "  cu-ax evclick --pid P X Y          把点击直投给指定进程（不动指针）\n"
         "  cu-ax evtype  --pid P 文字\n");
@@ -322,6 +323,24 @@ int main(int argc, char **argv) {
             return 0;
         }
 
+        if (!strcmp(cmd, "focused")) {
+            AXUIElementRef sys = AXUIElementCreateSystemWide();
+            CFTypeRef fe = NULL;
+            if (AXUIElementCopyAttributeValue(sys, kAXFocusedUIElementAttribute, &fe) == kAXErrorSuccess && fe) {
+                AXUIElementRef el = (AXUIElementRef)fe;
+                char *r = str_attr(el, kAXRoleAttribute);
+                char *t = str_attr(el, kAXTitleAttribute);
+                char *d = str_attr(el, kAXDescriptionAttribute);
+                char *v = str_attr(el, kAXValueAttribute);
+                printf("{\"role\":\"%s\",\"title\":\"%s\",\"desc\":\"%s\",\"value\":\"%s\"}\n",
+                       r?r:"", t?t:"", d?d:"", v?v:"");
+                free(r); free(t); free(d); free(v);
+                CFRelease(fe);
+            }
+            CFRelease(sys);
+            return 0;
+        }
+
         if (!app && !pid) usage();
         if (!pid) pid = resolve_pid(app);
         if (!pid) die("app not found; try `cu-ax apps`");
@@ -356,8 +375,8 @@ int main(int argc, char **argv) {
             printf("{\"action\":\"%s\",\"ok\":%d,\"error\":%d}\n", cmd,
                    err == kAXErrorSuccess, (int)err);
             CFRelease(ctx.hit);
+
         } else if (!strcmp(cmd, "enable")) {
-            // Chromium 系（Chrome/Edge）默认不暴露网页内容，开了这个才会吐出 AXWebArea
             AXError e1 = AXUIElementSetAttributeValue(root, CFSTR("AXEnhancedUserInterface"), kCFBooleanTrue);
             AXError e2 = AXUIElementSetAttributeValue(root, CFSTR("AXManualAccessibility"), kCFBooleanTrue);
             printf("{\"enhanced\":%d,\"manual\":%d}\n", e1 == kAXErrorSuccess, e2 == kAXErrorSuccess);
